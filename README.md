@@ -12,3 +12,6 @@ go get github.com/gorilla/websocket
 ```
 go run okcion.go
 ```
+
+## 运行效果
+![okcoin](https://github.com/yuanaichi/okcoin-terminal/blob/master/okcoin.jpg?raw=true "okcoin terminal")
