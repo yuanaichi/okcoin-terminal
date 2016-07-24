@@ -2,7 +2,6 @@ package main
 
 import (
     "os"
-    // "os/signal"
     "log"
     "time"
     "encoding/json"
@@ -345,7 +344,7 @@ func main() {
     par = ui.NewPar("Last Price")
     par.Height = 3
 	par.TextFgColor = ui.ColorWhite
-	par.BorderLabel = "Last Price"
+    par.BorderLabel = "Last Price"
 
 
     infoPar = ui.NewPar("Price Info")
