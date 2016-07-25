@@ -493,8 +493,10 @@ func main() {
         for {
             //or use message 
             if !uiPaused {
-                time.Sleep(time.Millisecond * 200) 
+                time.Sleep(time.Millisecond * 50)
                 ui.Render(ui.Body)
+            } else {
+                time.Sleep(time.Millisecond * 200)
             }
         }
     }()
