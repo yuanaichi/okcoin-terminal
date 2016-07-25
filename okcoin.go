@@ -51,6 +51,16 @@ type tradeData struct {
     DealType string
 }
 
+type kindLineData struct {
+    //[时间,开盘价,最高价,最低价,收盘价,成交量]
+    TimeStamp float64
+    OpeningPrice float64
+    HighestPrice float64
+    LowestPrice float64
+    ClosingPrice float64
+    Vol float64
+}
+
 type resMessage struct {
     Channel string   `json:"channel"`
     Data interface{} `json:"data"`
@@ -65,6 +75,8 @@ var prePrice float64
 
 var pingChan = make(chan bool) 
 
+var dayOpeningPrice float64
+
 func subChannelEvent(c *websocket.Conn, channel string) {
     subChan := subChannel{Event: "addChannel", Channel: channel}
     err := c.WriteJSON(subChan)
@@ -78,6 +90,7 @@ func sendSubChannel(c * websocket.Conn) {
     subChannelEvent(c, "ok_sub_spotcny_btc_ticker")
     subChannelEvent(c, "ok_sub_spotcny_btc_depth_20")
     subChannelEvent(c, "ok_sub_spotcny_btc_trades")
+    subChannelEvent(c, "ok_sub_spotcny_btc_kline_day")
 }
 
 func contains(slice []string, item string) bool {
@@ -91,7 +104,7 @@ func contains(slice []string, item string) bool {
 
 func drawTicker(tData *tickerData)  {
 
-    flag := "︎"
+    flag := " ︎︎"
     if prePrice == 0 {
         par.TextFgColor = ui.ColorWhite
     } else if tData.Last > prePrice {
@@ -104,14 +117,30 @@ func drawTicker(tData *tickerData)  {
         par.TextFgColor = ui.ColorWhite
     } 
 
+    percentStr := " "
+
+    if dayOpeningPrice > 0 {
+        percent := (tData.Last - dayOpeningPrice) / dayOpeningPrice
+
+        percent = percent * 100
+
+        if percent >= 0 {
+            percentStr = fmt.Sprintf("+%2.2f%%", math.Abs(percent))
+        } else if percent < 0 {
+            percentStr = fmt.Sprintf("-%2.2f%%", math.Abs(percent))
+        }
+    }
+    
+
     par.Text = fmt.Sprintf(
-        "Price: %.2f %s", 
+        "Price: %.2f %s %s", 
         tData.Last, 
-        flag)
+        flag,
+        percentStr)
 
     
     infoPar.Text = fmt.Sprintf(
-        "Buy: %.2f  Sell: %.2f High: %.2f Low: %.2f Vol: %s", 
+        "Buy 1: %.2f  Sell 1: %.2f High: %.2f Low: %.2f Vol: %s (last 24 hours)", 
         tData.Buy,
         tData.Sell,
         tData.High,
@@ -284,10 +313,11 @@ func processMessage(msgChan chan []byte) {
                 } else if res.Channel == "ok_sub_spotcny_btc_trades" {
                     data := res.Data.([]interface{})
                     
-                    tData := new(tradeData)
+                    
                     for _, item := range data {
                         trade := item.([]interface{})
-                        
+
+                        tData := new(tradeData)
                         tData.TradeNo = trade[0].(string)
 
                         var _v float64                  
@@ -307,9 +337,30 @@ func processMessage(msgChan chan []byte) {
 
                         tData.Time = trade[3].(string)
                         tData.DealType = trade[4].(string)
+
+                        // log.Printf("trade data %v", tData)
+                        drawTrade(tData)
                     }
-                    // log.Printf("trade data %v", tData)
-                    drawTrade(tData)
+                } else if res.Channel == "ok_sub_spotcny_btc_kline_day" {
+                    data := res.Data.([]interface{})
+                    
+                    log.Printf("kline data is :%#v", data)
+                    
+                    klData := new(kindLineData)
+
+                    switch data[0].(type) {
+                    case float64:
+                        //最新数据 一条
+                        klData.TimeStamp = data[0].(float64)
+                        klData.OpeningPrice = data[1].(float64)
+                        klData.HighestPrice = data[2].(float64)
+                        klData.LowestPrice = data[3].(float64)
+                        klData.ClosingPrice = data[4].(float64)
+                        klData.Vol = data[5].(float64)
+                    case []interface{}:
+                        //第一条消息 最近几天的 日k信息
+                    }
+                    dayOpeningPrice = klData.OpeningPrice
                 }
             }
         }
