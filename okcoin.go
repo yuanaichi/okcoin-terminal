@@ -68,7 +68,6 @@ type resMessage struct {
 
 var par, infoPar *ui.Par
 var delegateList, dealList *ui.List
-var changePercentBlock *ui.Par
 
 var dealQueue []*tradeData
 
@@ -77,6 +76,8 @@ var prePrice float64
 var pingChan = make(chan bool)
 
 var dayOpeningPrice float64
+
+var uiPaused = false
 
 func subChannelEvent(c *websocket.Conn, channel string) {
 	subChan := subChannel{Event: "addChannel", Channel: channel}
@@ -106,16 +107,17 @@ func contains(slice []string, item string) bool {
 func drawTicker(tData *tickerData) {
 
 	flag := " ︎︎"
+    priceColor := "fg-white"
 	if prePrice == 0 {
-		par.TextFgColor = ui.ColorWhite
+        priceColor = "fg-white"
 	} else if tData.Last > prePrice {
-		par.TextFgColor = ui.ColorGreen
+        priceColor = "fg-green"
 		flag = "⬆︎︎"
 	} else if tData.Last < prePrice {
-		par.TextFgColor = ui.ColorRed
+		priceColor = "fg-red"
 		flag = "⬇"
 	} else {
-		par.TextFgColor = ui.ColorWhite
+        priceColor = "fg-white"
 	}
 
 	changePercentStr := "+0.00%"
@@ -125,18 +127,18 @@ func drawTicker(tData *tickerData) {
 		percent = percent * 100
 
 		if percent >= 0 {
-			changePercentStr = fmt.Sprintf("+%2.2f%%", math.Abs(percent))
-			changePercentBlock.TextFgColor = ui.ColorGreen
+			changePercentStr = fmt.Sprintf("[+%2.2f%%](fg-green)", math.Abs(percent))
 		} else if percent < 0 {
-			changePercentStr = fmt.Sprintf("-%2.2f%%", math.Abs(percent))
-			changePercentBlock.TextFgColor = ui.ColorRed
+			changePercentStr = fmt.Sprintf("[-%2.2f%%](fg-red)", math.Abs(percent))
 		}
 	}
 
 	par.Text = fmt.Sprintf(
-		"Price: %.2f %s",
+		"Price: [%.2f %s](%s)   %s",
 		tData.Last,
-		flag)
+		flag,
+        priceColor,
+        changePercentStr)
 
 	infoPar.Text = fmt.Sprintf(
 		"Buy 1: %.2f  Sell 1: %.2f High: %.2f Low: %.2f Vol: %s (last 24 hours)",
@@ -146,9 +148,7 @@ func drawTicker(tData *tickerData) {
 		tData.Low,
 		tData.Vol)
 
-	changePercentBlock.Text = changePercentStr
-
-	ui.Render(ui.Body)
+    // ui.Render(ui.Body)
 
 	prePrice = tData.Last
 }
@@ -196,7 +196,7 @@ func drawDepth(dData *dePthData) {
 	copy(delegateItems[len(asksItems)+1:], bidsItems)
 
 	delegateList.Items = delegateItems
-	ui.Render(ui.Body)
+	// ui.Render(ui.Body)
 }
 
 func drawTrade(tData *tradeData) {
@@ -216,11 +216,12 @@ func drawTrade(tData *tradeData) {
 	}
 
 	dealList.Items = dealItems
-	ui.Render(ui.Body)
+	// ui.Render(ui.Body)
 }
 
 func processMessage(msgChan chan []byte) {
 	for message := range msgChan {
+
 		//包含pong
 		if strings.Contains(string(message), "pong") {
 			//heart check
@@ -395,7 +396,6 @@ func main() {
 	par.Height = 3
 	par.TextFgColor = ui.ColorWhite
 	par.BorderLabel = "Last Price"
-	par.BorderRight = false
 
 	infoPar = ui.NewPar("Price Info")
 	infoPar.Height = 3
@@ -422,14 +422,9 @@ func main() {
 	dealList.Height = 13
 	dealList.BorderLabel = "Deal List"
 
-	changePercentBlock = ui.NewPar("+0.00%")
-	changePercentBlock.Height = 3
-	changePercentBlock.BorderLeft = false
-
 	ui.Body.AddRows(
 		ui.NewRow(
 			ui.NewCol(3, 0, par),
-			ui.NewCol(1, -1, changePercentBlock),
 			ui.NewCol(3, 0, timePar)))
 
 	ui.Body.AddRows(
@@ -475,6 +470,14 @@ func main() {
 		exit()
 	})
 
+    ui.Handle("/sys/kbd/p", func (ui.Event)  {
+        if !uiPaused {
+            uiPaused = true
+        } else {
+            uiPaused = false
+        }
+    })
+
 	// ui.Handle("/sys/wnd/resize", func (e ui.Event)  {
 	//     ui.Body.Width = ui.TermWidth()
 	//     ui.Body.Align()
@@ -484,8 +487,17 @@ func main() {
 	ui.Handle("/timer/1s", func(e ui.Event) {
 		currentTime := time.Now().Format("2006-01-02 15:15:05")
 		timePar.Text = currentTime
-		ui.Render(ui.Body)
 	})
+
+    go func ()  {
+        for {
+            //or use message 
+            if !uiPaused {
+                time.Sleep(time.Millisecond * 200) 
+                ui.Render(ui.Body)
+            }
+        }
+    }()
 
 	//----------------------- stocket message --------------
 
