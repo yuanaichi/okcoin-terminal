@@ -202,21 +202,23 @@ func drawDepth(dData *dePthData) {
 func drawTrade(tData *tradeData) {
 	dealQueue = append(dealQueue, tData)
 
+    //队列里 超过 100个数据 保留10个
 	if len(dealQueue) == 100 {
 		dealQueue = dealQueue[len(dealQueue)-10:]
 	}
 
 	dealItems := []string{}
 
-	for i := len(dealQueue); i > 0; i-- {
-		_trade := dealQueue[i-1]
+    _dealQueue := dealQueue[:]
+	for i := len(_dealQueue); i > 0; i-- {
+		_trade := _dealQueue[i-1]
+        log.Printf("trade: %#v", _trade)
 		dealItems = append(
 			dealItems,
 			fmt.Sprintf("%s      %.2f     %5.3f    %s", _trade.Time, _trade.Price, _trade.Vol, _trade.DealType))
 	}
 
 	dealList.Items = dealItems
-	// ui.Render(ui.Body)
 }
 
 func processMessage(msgChan chan []byte) {
@@ -485,7 +487,7 @@ func main() {
 	// })
 
 	ui.Handle("/timer/1s", func(e ui.Event) {
-		currentTime := time.Now().Format("2006-01-02 15:15:05")
+		currentTime := time.Now().Format("2006-01-02 15:04:05")
 		timePar.Text = currentTime
 	})
 
