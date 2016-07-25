@@ -14,4 +14,4 @@ go run okcoin.go
 ```
 
 ## 运行效果
-![okcoin](https://github.com/yuanaichi/okcoin-terminal/blob/master/okcoin.jpg?raw=true "okcoin terminal")
+![okcoin](https://github.com/yuanaichi/okcoin-terminal/blob/master/okcoin.gif?raw=true "okcoin terminal")
