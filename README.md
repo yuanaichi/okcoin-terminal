@@ -26,7 +26,7 @@ go run okcoin.go
 
 编译:
 
-``
+```
 go build -ldflags "-s -w" -o bin/okcoin okcoin.go
 ```
 
