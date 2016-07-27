@@ -9,6 +9,12 @@ go get -u github.com/gizak/termui
 go get github.com/gorilla/websocket
 ```
 
+或者使用 gopm
+
+```
+gopm install
+```
+
 运行：
 ```
 go run okcoin.go

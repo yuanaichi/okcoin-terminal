@@ -1,1 +1,4 @@
 btc.log
+.DS_Store
+.gopmfile
+.vendor
