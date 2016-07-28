@@ -426,17 +426,17 @@ func main() {
 
 	ui.Body.AddRows(
 		ui.NewRow(
-			ui.NewCol(3, 0, par),
-			ui.NewCol(3, 0, timePar)))
+			ui.NewCol(6, 0, par),
+			ui.NewCol(6, 0, timePar)))
 
 	ui.Body.AddRows(
 		ui.NewRow(
-			ui.NewCol(6, 0, infoPar)))
+			ui.NewCol(12, 0, infoPar)))
 
 	ui.Body.AddRows(
 		ui.NewRow(
-			ui.NewCol(3, 0, delegateList),
-			ui.NewCol(3, 0, dealList)))
+			ui.NewCol(6, 0, delegateList),
+			ui.NewCol(6, 0, dealList)))
 
 	ui.Body.Align()
 	ui.Render(ui.Body)
@@ -480,11 +480,11 @@ func main() {
         }
     })
 
-	// ui.Handle("/sys/wnd/resize", func (e ui.Event)  {
-	//     ui.Body.Width = ui.TermWidth()
-	//     ui.Body.Align()
-	//     ui.Render(ui.Body)
-	// })
+	ui.Handle("/sys/wnd/resize", func (e ui.Event)  {
+	    ui.Body.Width = ui.TermWidth()
+	    ui.Body.Align()
+	    ui.Render(ui.Body)
+	})
 
 	ui.Handle("/timer/1s", func(e ui.Event) {
 		currentTime := time.Now().Format("2006-01-02 15:04:05")
