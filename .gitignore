@@ -1,3 +1,4 @@
 btc.log
 .DS_Store
-.vendor
+vendor
+.vscode

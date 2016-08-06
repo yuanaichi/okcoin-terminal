@@ -112,10 +112,10 @@ func drawTicker(tData *tickerData) {
         priceColor = "fg-white"
 	} else if tData.Last > prePrice {
         priceColor = "fg-green"
-		flag = "⬆︎︎"
+		flag = "↑"//"⬆︎︎"
 	} else if tData.Last < prePrice {
 		priceColor = "fg-red"
-		flag = "⬇"
+		flag = "↓" //"⬇"
 	} else {
         priceColor = "fg-white"
 	}
@@ -155,9 +155,9 @@ func drawTicker(tData *tickerData) {
 
 func drawDepth(dData *dePthData) {
 
-	_symol := "◼"
+	_symol := "-" //"◼"
 
-	listNum := 5 //5档盘口
+	listNum := 10 //5档盘口
 
 	//sell 2  10
 	//sell 1  9
@@ -174,7 +174,7 @@ func drawDepth(dData *dePthData) {
 
 		bidsItems = append(
 			bidsItems,
-			fmt.Sprintf("buy  %d    %.2f    %5.2f %s", _k+1, bids[0], bids[1], strings.Repeat(_symol, symolLen)))
+			fmt.Sprintf("buy  %2d    %.2f    %5.2f %s", _k+1, bids[0], bids[1], strings.Repeat(_symol, symolLen)))
 	}
 
 	//asks 卖 1-5 升序   5-1 降序
@@ -185,7 +185,7 @@ func drawDepth(dData *dePthData) {
 		symolLen := int(math.Min(math.Ceil(asks[1]*100/10), 20))
 		asksItems = append(
 			asksItems,
-			fmt.Sprintf("sell %d    %.2f    %5.2f %s", listNum-_k, asks[0], asks[1], strings.Repeat(_symol, symolLen)))
+			fmt.Sprintf("sell %2d    %.2f    %5.2f %s", listNum-_k, asks[0], asks[1], strings.Repeat(_symol, symolLen)))
 	}
 
 	delegateItems := make([]string, len(bidsItems)+len(asksItems)+1) //1行分割
@@ -204,7 +204,7 @@ func drawTrade(tData *tradeData) {
 
     //队列里 超过 100个数据 保留10个
 	if len(dealQueue) == 100 {
-		dealQueue = dealQueue[len(dealQueue)-10:]
+		dealQueue = dealQueue[len(dealQueue)-20:]
 	}
 
 	dealItems := []string{}
@@ -215,9 +215,9 @@ func drawTrade(tData *tradeData) {
         log.Printf("trade: %#v", _trade)
 		dealItems = append(
 			dealItems,
-			fmt.Sprintf("%s      %.2f     %5.3f    %s", _trade.Time, _trade.Price, _trade.Vol, _trade.DealType))
+			fmt.Sprintf("%s      %.2f     %6.3f    %s", _trade.Time, _trade.Price, _trade.Vol, _trade.DealType))
 	}
-
+	
 	dealList.Items = dealItems
 }
 
@@ -416,12 +416,12 @@ func main() {
 	delegateList.Items = strItems
 	delegateList.ItemFgColor = ui.ColorYellow
 	delegateList.BorderLabel = "Delegate List"
-	delegateList.Height = 13
+	delegateList.Height = 23
 
 	dealList = ui.NewList()
 	dealList.Items = strItems
 	dealList.ItemFgColor = ui.ColorYellow
-	dealList.Height = 13
+	dealList.Height = 23
 	dealList.BorderLabel = "Deal List"
 
 	ui.Body.AddRows(

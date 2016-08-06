@@ -1,0 +1,4 @@
+package: github.com/yuanaichi/okcoin-terminal
+import:
+- package: github.com/gizak/termui
+- package: github.com/gorilla/websocket
